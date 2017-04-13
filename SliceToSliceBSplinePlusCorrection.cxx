@@ -88,16 +88,16 @@ int main(int argc, char **argv ){
       , false, 1.0, "float");
   cmd.add(smooth3Arg);
 
-  TCLAP::ValueArg< int > gridXArg("","gridX","Number of grid points in X for Bspline", false, 5,
+  TCLAP::ValueArg< int > gridXArg("","gridX","Number of grid points in X for Bspline", false, 6,
       "integer");
   cmd.add( gridXArg );
 
-  TCLAP::ValueArg< int > gridYArg("","gridY","Number of grid points in Y for Bspline", false, 20,
+  TCLAP::ValueArg< int > gridYArg("","gridY","Number of grid points in Y for Bspline", false, 6,
       "integer");
   cmd.add( gridYArg );
 
 
-  TCLAP::ValueArg< int > gridTArg("","gridT","Number of grid points in time for Bspline", false, 20,
+  TCLAP::ValueArg< int > gridTArg("","gridT","Number of grid points in time for Bspline", false, 6,
       "integer");
   cmd.add( gridTArg );
 
@@ -262,7 +262,7 @@ int main(int argc, char **argv ){
     catch( itk::ExceptionObject & err ){
       std::cerr << "ExceptionObject caught !" << std::endl;
       std::cerr << err << std::endl;
-      return EXIT_FAILURE;
+      //return EXIT_FAILURE;
     }
  
     const double bestValue = optimizer->GetValue();
@@ -304,6 +304,12 @@ int main(int argc, char **argv ){
 
   joinFilter->Update();
   ImageType3D::Pointer alignedVolume = joinFilter->GetOutput();
+
+  { 
+  std::stringstream outfile;
+  outfile << prefix << "-bs2-slice-registered.nrrd";
+  ImageIO<ImageType3D>::saveImage( alignedVolume, outfile.str()  );
+  }
 
 
 
@@ -397,6 +403,7 @@ int main(int argc, char **argv ){
   optimizer3D->SetMaximumNumberOfFunctionEvaluations( 200 );
 
   //Do registration
+  std::cout << "starting 3D registration" << std::endl;
   try{
 	  registration3D->SetNumberOfThreads(1);
 	  registration3D->Update();
@@ -423,9 +430,12 @@ int main(int argc, char **argv ){
   resampler->Update();
   ImageType3D::Pointer moved = resampler->GetOutput();
 	
+  { 
+  std::stringstream outfile;
+  outfile << prefix << "-bs2-registered.nrrd";
+  ImageIO<ImageType3D>::saveImage( moved, outfile.str()  );
+  }
 
-  ImageIO< ImageType3D >::saveImage(alignedVolume, "slice-registered.nrrd");
-  ImageIO< ImageType3D >::saveImage(moved, "registered.nrrd");
 
 
   return EXIT_SUCCESS;

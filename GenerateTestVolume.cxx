@@ -86,7 +86,7 @@ int main(int argc, char **argv )
     
     index[0] = (int) lround( x3 + sin( i/(size[2]-1.0) * 1.5 * M_PI ) * 10 + shift );
     index[1] = (int) lround(y3 + sin( i/(size[2]-1.0) * 1.5 * M_PI ) * 10);
-    image->SetPixel(index, 1.f);
+    //image->SetPixel(index, 1.f);
   } 
 
     

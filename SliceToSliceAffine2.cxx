@@ -155,9 +155,7 @@ int main(int argc, char **argv )
     ExtractFilter::Pointer fixedExtract = ExtractFilter::New();
     fixedExtract->SetExtractionRegion(fixedRegion);
     fixedExtract->SetInput(volumeP);
-#if ITK_VERSION_MAJOR >= 4
     fixedExtract->SetDirectionCollapseToIdentity(); // This is required.
-#endif
     fixedExtract->Update();
  
     ImageType2D::Pointer fixedImage = fixedExtract->GetOutput();
@@ -165,9 +163,7 @@ int main(int argc, char **argv )
     ExtractFilter::Pointer movingExtract = ExtractFilter::New();
     movingExtract->SetExtractionRegion(movingRegion);
     movingExtract->SetInput(volume1);
-#if ITK_VERSION_MAJOR >= 4
     movingExtract->SetDirectionCollapseToIdentity(); // This is required.
-#endif
     movingExtract->Update();
  
     ImageType2D::Pointer movingImage = movingExtract->GetOutput();
@@ -195,23 +191,6 @@ int main(int argc, char **argv )
     registration->SetOptimizer(     optimizer     );
     registration->SetTransform(     transform     );
     registration->SetInterpolator(  interpolator  );
-
-
-#ifdef DEBUG
-    // Write the two synthetic inputs
-    typedef itk::ImageFileWriter< ImageType >  WriterType;
- 
-    WriterType::Pointer      fixedWriter =  WriterType::New();
-    fixedWriter->SetFileName("fixed.nrrd");
-    fixedWriter->SetInput( fixedImage);
-    fixedWriter->Update();
- 
-    WriterType::Pointer      movingWriter =  WriterType::New();
-    movingWriter->SetFileName("moving.nrrd");
-    movingWriter->SetInput( movingImage);
-    movingWriter->Update();
-#endif
-
     registration->SetFixedImage(fixedImage);
     registration->SetMovingImage(movingImage);
  
