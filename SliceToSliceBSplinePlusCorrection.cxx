@@ -307,7 +307,7 @@ int main(int argc, char **argv ){
 
   { 
   std::stringstream outfile;
-  outfile << prefix << "-bs2-slice-registered.nrrd";
+  outfile << prefix << "-ssbsc-slice-registered.nrrd";
   ImageIO<ImageType3D>::saveImage( alignedVolume, outfile.str()  );
   }
 
@@ -432,7 +432,7 @@ int main(int argc, char **argv ){
 	
   { 
   std::stringstream outfile;
-  outfile << prefix << "-bs2-registered.nrrd";
+  outfile << prefix << "-ssbsc-registered.nrrd";
   ImageIO<ImageType3D>::saveImage( moved, outfile.str()  );
   }
 

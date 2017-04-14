@@ -41,4 +41,5 @@ TARGET_LINK_LIBRARIES (SliceToSliceBSplineComposite ${ITK_LIBRARIES} )
 ADD_EXECUTABLE(SliceToSliceElastic SliceToSliceElastic.cxx)
 TARGET_LINK_LIBRARIES (SliceToSliceElastic ${ITK_LIBRARIES} )
 
-
+ADD_EXECUTABLE( VolumeBSpline VolumeBSpline.cxx )
+TARGET_LINK_LIBRARIES( VolumeBSpline ${ITK_LIBRARIES} )

@@ -75,24 +75,29 @@ int main(int argc, char **argv ){
 
   TCLAP::ValueArg<float> smooth1Arg("","smooth1",
       "Pre smooth volume with a Gaussian"
-      , false, 1.0, "float");
+      , false, 3.0, "float");
   cmd.add(smooth1Arg);
   
   TCLAP::ValueArg<float> smooth2Arg("","smooth2",
       "Pre smooth volume with a Gaussian"
-      , false, 1.0, "float");
+      , false, 3.0, "float");
   cmd.add(smooth2Arg);
   
   TCLAP::ValueArg<float> smooth3Arg("","smooth3",
       "Pre smooth volume with a Gaussian"
-      , false, 1.0, "float");
+      , false, 9.0, "float");
   cmd.add(smooth3Arg);
+  
+  TCLAP::ValueArg<float> smooth3MArg("","smooth3M",
+      "Pre smooth volume with a Gaussian"
+      , false, 0.5, "float");
+  cmd.add(smooth3MArg);
 
-  TCLAP::ValueArg< int > gridXArg("","gridX","Number of grid points in X for Bspline", false, 6,
+  TCLAP::ValueArg< int > gridXArg("","gridX","Number of grid points in X for Bspline", false, 4,
       "integer");
   cmd.add( gridXArg );
 
-  TCLAP::ValueArg< int > gridYArg("","gridY","Number of grid points in Y for Bspline", false, 6,
+  TCLAP::ValueArg< int > gridYArg("","gridY","Number of grid points in Y for Bspline", false, 8,
       "integer");
   cmd.add( gridYArg );
 
@@ -117,12 +122,13 @@ int main(int argc, char **argv ){
   double s1 = smooth1Arg.getValue();
   double s2 = smooth2Arg.getValue();
   double s3 = smooth3Arg.getValue();
+  double s3M = smooth3MArg.getValue();
 
   // Get the  volume
   ImageType3D::Pointer volume = ImageIO<ImageType3D>::readImage( volumeArg.getValue() );      
   RescaleFilter::Pointer rescale = RescaleFilter::New();
   rescale->SetInput(volume);
-  rescale->SetOutputMaximum(10.0);
+  rescale->SetOutputMaximum(100.0);
   rescale->SetOutputMinimum(0.0);
   rescale->Update();
   volume = rescale->GetOutput();
@@ -146,10 +152,17 @@ int main(int argc, char **argv ){
    
   { 
   std::stringstream outfile;
-  outfile << prefix << "-bs3-smooth.nrrd";
+  outfile << prefix << "-smoothssbs-smooth.tif";
   ImageIO<ImageType3D>::saveImage( volumeSmooth, outfile.str()  );
   }
-
+  
+  sig[2] = s3M * volumeSpacing[2]; 
+  
+  GaussianFilter3D::Pointer smoothMoving = GaussianFilter3D::New();
+  smoothMoving->SetSigmaArray(sig);
+  smoothMoving->SetInput( volume );
+  smoothMoving->Update();
+  ImageType3D::Pointer volumeMoving = smoothMoving->GetOutput();
 
 
   //Join all the registred slices
@@ -200,12 +213,21 @@ int main(int argc, char **argv ){
     movingExtract->SetDirectionCollapseToIdentity(); // This is required.
     movingExtract->Update();
     ImageType2D::Pointer movingOrig = movingExtract->GetOutput();
+
+
+    ExtractFilter::Pointer movingExtract2 = ExtractFilter::New();
+    movingExtract2->SetExtractionRegion(movingRegion);
+    movingExtract2->SetInput(volumeMoving);
+    movingExtract2->SetDirectionCollapseToIdentity(); // This is required.
+    movingExtract2->Update();
+    ImageType2D::Pointer movingImage = movingExtract2->GetOutput();
+/*
     GaussianFilter2D::Pointer smoothMoving = GaussianFilter2D::New();
     smoothMoving->SetSigmaArray(sig2d);
     smoothMoving->SetInput( movingExtract->GetOutput() );
     smoothMoving->Update();
     ImageType2D::Pointer movingImage = smoothMoving->GetOutput();
-
+*/
 
 
 
@@ -306,7 +328,7 @@ int main(int argc, char **argv ){
   
   { 
   std::stringstream outfile;
-  outfile << prefix << "-bs3-registered.nrrd";
+  outfile << prefix << "-smoothssbs-registered.tif";
   ImageIO<ImageType3D>::saveImage( alignedVolume, outfile.str()  );
   }
 
