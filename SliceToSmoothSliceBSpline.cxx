@@ -75,17 +75,17 @@ int main(int argc, char **argv ){
 
   TCLAP::ValueArg<float> smooth1Arg("","smooth1",
       "Pre smooth volume with a Gaussian"
-      , false, 3.0, "float");
+      , false, 6.0, "float");
   cmd.add(smooth1Arg);
   
   TCLAP::ValueArg<float> smooth2Arg("","smooth2",
       "Pre smooth volume with a Gaussian"
-      , false, 3.0, "float");
+      , false, 6.0, "float");
   cmd.add(smooth2Arg);
   
   TCLAP::ValueArg<float> smooth3Arg("","smooth3",
       "Pre smooth volume with a Gaussian"
-      , false, 9.0, "float");
+      , false, 6.0, "float");
   cmd.add(smooth3Arg);
   
   TCLAP::ValueArg<float> smooth3MArg("","smooth3M",
