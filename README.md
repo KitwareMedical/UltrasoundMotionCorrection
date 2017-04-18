@@ -6,5 +6,5 @@ ultrasound images. The currently best working approach is the SliceToSmoothSlice
 Contains code copied from https://bitbucket.org/suppechasper/elasticwarp .
 
 Compilation is setup through [CMake](https://cmake.org/) and 
-requires [ITK](www.itk.org) and [TCLAP](http://tclap.sourceforge.net/).
+requires [ITK](https://itk.org/) and [TCLAP](http://tclap.sourceforge.net/).
 
