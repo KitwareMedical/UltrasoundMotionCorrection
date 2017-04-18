@@ -31,6 +31,9 @@ TARGET_LINK_LIBRARIES (SliceToSliceBSpline ${ITK_LIBRARIES} )
 ADD_EXECUTABLE(SliceToSmoothSliceBSpline SliceToSmoothSliceBSpline.cxx)
 TARGET_LINK_LIBRARIES (SliceToSmoothSliceBSpline ${ITK_LIBRARIES} )
 
+ADD_EXECUTABLE(SliceToSmoothSliceAffine SliceToSmoothSliceAffine.cxx)
+TARGET_LINK_LIBRARIES (SliceToSmoothSliceAffine ${ITK_LIBRARIES} )
+
 ADD_EXECUTABLE(SliceToSliceBSplinePlusCorrection SliceToSliceBSplinePlusCorrection.cxx)
 TARGET_LINK_LIBRARIES (SliceToSliceBSplinePlusCorrection ${ITK_LIBRARIES} )
 

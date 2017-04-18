@@ -1,10 +1,10 @@
 #include "itkExtractImageFilter.h"
 #include "itkImage.h"
-#include "itkImageRegistrationMethod.h"
+#include "itkImageRegistrationMethodv4.h"
 #include "itkLinearInterpolateImageFunction.h"
-#include "itkMeanSquaresImageToImageMetric.h"
+#include "itkMeanSquaresImageToImageMetricv4.h"
 #include "itkGradientDescentOptimizer.h"
-#include "itkLBFGSOptimizer.h"
+#include "itkLBFGSOptimizerv4.h"
 #include "itkResampleImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 #include "itkCompositeTransform.h"
@@ -29,35 +29,27 @@ typedef itk::Image< PixelType, 2 >  ImageType2D;
 typedef itk::Image< PixelType, 3 >  ImageType3D;
      
 typedef itk::SmoothingRecursiveGaussianImageFilter<ImageType3D, ImageType3D> GaussianFilter3D;
-typedef itk::SmoothingRecursiveGaussianImageFilter<ImageType2D, ImageType2D> GaussianFilter2D;
 typedef itk::RescaleIntensityImageFilter<ImageType3D, ImageType3D> RescaleFilter;
 typedef itk::ExtractImageFilter< ImageType3D, ImageType2D > ExtractFilter;
 typedef itk::JoinSeriesImageFilter< ImageType2D, ImageType3D> JoinFilter;
 typedef itk::ResampleImageFilter< ImageType2D, ImageType2D >    ResampleFilterType;
-typedef itk::ResampleImageFilter< ImageType3D, ImageType3D >    ResampleFilterType3D;
  
 
 typedef itk::CompositeTransform< double, 2 > CompositeTransform;
 
 //typedef itk::GradientDescentOptimizer       OptimizerType;
 //typedef itk::ConjugateGradientOptimizer       OptimizerType;
-typedef itk::LBFGSOptimizer       OptimizerType;
+typedef itk::LBFGSOptimizerv4       OptimizerType;
 
 //2D registration
-typedef itk::MeanSquaresImageToImageMetric< ImageType2D, ImageType2D >  MetricType2D;
+typedef itk::MeanSquaresImageToImageMetricv4< ImageType2D, ImageType2D >  MetricType2D;
 typedef itk::LinearInterpolateImageFunction< ImageType2D, double >    InterpolatorType2D;
-typedef itk::ImageRegistrationMethod< ImageType2D, ImageType2D >    RegistrationType2D;
+typedef itk::ImageRegistrationMethodv4< ImageType2D, ImageType2D >    RegistrationType2D;
 
 typedef itk::BSplineTransform< double, 2,  2 >     TransformType2D;
 typedef TransformType2D::ParametersType     ParametersType2D;
 
-//3d Registration
-typedef itk::MeanSquaresImageToImageMetric< ImageType3D, ImageType3D >  MetricType3D;
-typedef itk::LinearInterpolateImageFunction< ImageType3D, double >    InterpolatorType3D;
-typedef itk::ImageRegistrationMethod< ImageType3D, ImageType3D >    RegistrationType3D;
 
-typedef itk::BSplineTransform< double, 3,  2 >     TransformType3D;
-typedef TransformType3D::ParametersType     ParametersType3D;
 
 
 int main(int argc, char **argv ){
@@ -73,23 +65,23 @@ int main(int argc, char **argv ){
       "integer");
   cmd.add( dimArg );
 
-  TCLAP::ValueArg<float> smooth1Arg("","smooth1",
-      "Pre smooth volume with a Gaussian"
+  TCLAP::ValueArg<float> smooth1Arg("","smoothX",
+      "Bandwidth for smoothing in X"
       , false, 6.0, "float");
   cmd.add(smooth1Arg);
   
-  TCLAP::ValueArg<float> smooth2Arg("","smooth2",
-      "Pre smooth volume with a Gaussian"
+  TCLAP::ValueArg<float> smooth2Arg("","smoothY",
+      "Bandwidth for smoothing in Y"
       , false, 6.0, "float");
   cmd.add(smooth2Arg);
   
-  TCLAP::ValueArg<float> smooth3Arg("","smooth3",
-      "Pre smooth volume with a Gaussian"
+  TCLAP::ValueArg<float> smooth3Arg("","smoothTime",
+      "Bandwidth for smoothing of fixed volume in time"
       , false, 6.0, "float");
   cmd.add(smooth3Arg);
   
-  TCLAP::ValueArg<float> smooth3MArg("","smooth3M",
-      "Pre smooth volume with a Gaussian"
+  TCLAP::ValueArg<float> smooth3MArg("","smoothTimeM",
+      "Bandwidth for smoothing of moving volume in time"
       , false, 0.5, "float");
   cmd.add(smooth3MArg);
 
@@ -188,9 +180,9 @@ int main(int argc, char **argv ){
     size[dim] = 0;
 
  
-    GaussianFilter2D::SigmaArrayType sig2d = GaussianFilter2D::SigmaArrayType::Filled(0);
-    sig2d[0] = s1 * volumeSpacing[0]; 
-    sig2d[1] = s2 * volumeSpacing[1]; 
+    //GaussianFilter2D::SigmaArrayType sig2d = GaussianFilter2D::SigmaArrayType::Filled(0);
+    //sig2d[0] = s1 * volumeSpacing[0]; 
+    //sig2d[1] = s2 * volumeSpacing[1]; 
  
     ImageType3D::RegionType fixedRegion(fixedStart, size);
     ExtractFilter::Pointer fixedExtract = ExtractFilter::New();
@@ -251,27 +243,30 @@ int main(int argc, char **argv ){
     //Setup registration 
     MetricType2D::Pointer         metric        = MetricType2D::New();
     OptimizerType::Pointer      optimizer       = OptimizerType::New();
-    InterpolatorType2D::Pointer   interpolator  = InterpolatorType2D::New();
+    //InterpolatorType2D::Pointer   interpolator  = InterpolatorType2D::New();    
+    InterpolatorType2D::Pointer   movingInterpolator  = InterpolatorType2D::New();
+    InterpolatorType2D::Pointer   fixedInterpolator  = InterpolatorType2D::New();
+
     RegistrationType2D::Pointer   registration  = RegistrationType2D::New();
-
-
     registration->SetMetric(        metric        );
     registration->SetOptimizer(     optimizer     );
-    registration->SetTransform(     transform     );
-    registration->SetInterpolator(  interpolator  );
-
+    //registration->SetTransform(     transform     );
+    registration->SetInitialTransform(     transform     );
+    //registration->SetInterpolator(  interpolator  );
+    metric->SetMovingInterpolator( movingInterpolator );
+    metric->SetFixedInterpolator( fixedInterpolator );
 
     registration->SetFixedImage(fixedImage);
     registration->SetMovingImage(movingImage);
  
-    registration->SetFixedImageRegion( fixedImage->GetLargestPossibleRegion() );
+   // registration->SetFixedImageRegion( fixedImage->GetLargestPossibleRegion() );
  
  
-    const unsigned int numberOfParameters = transform->GetNumberOfParameters();
-    ParametersType2D parameters( numberOfParameters );
-    parameters.Fill( 0.0 );
-    transform->SetParameters( parameters );
-    registration->SetInitialTransformParameters( transform->GetParameters() );
+   // const unsigned int numberOfParameters = transform->GetNumberOfParameters();
+   // ParametersType2D parameters( numberOfParameters );
+   // parameters.Fill( 0.0 );
+   // transform->SetParameters( parameters );
+   // registration->SetInitialTransformParameters( transform->GetParameters() );
 
 
 
@@ -289,6 +284,24 @@ int main(int argc, char **argv ){
     optimizer->TraceOn();
     optimizer->SetMaximumNumberOfFunctionEvaluations( 200 );
 
+    RegistrationType2D::ShrinkFactorsArrayType shrinkFactorsPerLevel;
+    shrinkFactorsPerLevel.SetSize( 4 );
+    shrinkFactorsPerLevel[0] = 8;
+    shrinkFactorsPerLevel[1] = 4;
+    shrinkFactorsPerLevel[2] = 2;
+    shrinkFactorsPerLevel[3] = 1;
+
+    RegistrationType2D::SmoothingSigmasArrayType smoothingSigmasPerLevel;
+    smoothingSigmasPerLevel.SetSize( 4 );
+    smoothingSigmasPerLevel[0] = 4;
+    smoothingSigmasPerLevel[1] = 2;
+    smoothingSigmasPerLevel[2] = 1;
+    smoothingSigmasPerLevel[3] = 0;
+
+    registration->SetNumberOfLevels ( 4 );
+    registration->SetSmoothingSigmasPerLevel( smoothingSigmasPerLevel );
+    registration->SetShrinkFactorsPerLevel( shrinkFactorsPerLevel );
+    
     //Do registration
     try{
       registration->SetNumberOfThreads(1);
